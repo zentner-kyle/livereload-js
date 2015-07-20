@@ -88,11 +88,27 @@ exports.Reloader = class Reloader
       if path.match(/\.(jpe?g|png|gif)$/i)
         @reloadImages(path)
         return
+    if options.liveJS
+      if path.match(/\.(js|es)$/i)
+        @reloadJS(path)
+        return
     @reloadPage()
 
 
   reloadPage: ->
     @window.document.location.reload()
+
+
+  reloadJS: (path) ->
+    # We'll be adding new <script> elements, and we need to avoid seeing them,
+    # so 'freeze' the HTMLCollection into an Array.
+    for script in Array.prototype.slice.apply(@document.scripts, [0])
+      if pathsMatch(path, pathFromUrl(script.src))
+        parent = script.parentElement
+        parent.removeChild(script)
+        new_script = @document.createElement('script')
+        parent.appendChild(new_script)
+        new_script.src = path
 
 
   reloadImages: (path) ->

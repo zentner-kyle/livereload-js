@@ -92,6 +92,7 @@ exports.LiveReload = class LiveReload
     @reloader.reload message.path,
       liveCSS: message.liveCSS ? yes
       liveImg: message.liveImg ? yes
+      liveJS: message.liveJS ? yes
       originalPath: message.originalPath || ''
       overrideURL: message.overrideURL || ''
       serverURL: "http://#{@options.host}:#{@options.port}"

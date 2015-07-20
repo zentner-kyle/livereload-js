@@ -400,11 +400,12 @@
     };
 
     LiveReload.prototype.performReload = function(message) {
-      var _ref, _ref1;
+      var _ref, _ref1, _ref2;
       this.log("LiveReload received reload request: " + (JSON.stringify(message, null, 2)));
       return this.reloader.reload(message.path, {
         liveCSS: (_ref = message.liveCSS) != null ? _ref : true,
         liveImg: (_ref1 = message.liveImg) != null ? _ref1 : true,
+        liveJS: (_ref2 = message.liveJS) != null ? _ref2 : true,
         originalPath: message.originalPath || '',
         overrideURL: message.overrideURL || '',
         serverURL: "http://" + this.options.host + ":" + this.options.port
@@ -774,11 +775,36 @@
           return;
         }
       }
+      if (options.liveJS) {
+        if (path.match(/\.(js|es)$/i)) {
+          this.reloadJS(path);
+          return;
+        }
+      }
       return this.reloadPage();
     };
 
     Reloader.prototype.reloadPage = function() {
       return this.window.document.location.reload();
+    };
+
+    Reloader.prototype.reloadJS = function(path) {
+      var new_script, parent, script, _i, _len, _ref, _results;
+      _ref = Array.prototype.slice.apply(this.document.scripts, [0]);
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        script = _ref[_i];
+        if (pathsMatch(path, pathFromUrl(script.src))) {
+          parent = script.parentElement;
+          parent.removeChild(script);
+          new_script = this.document.createElement('script');
+          parent.appendChild(new_script);
+          _results.push(new_script.src = path);
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     Reloader.prototype.reloadImages = function(path) {
